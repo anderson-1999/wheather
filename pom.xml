@@ -96,6 +96,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>wheather-fiap-images</finalName>
 	</build>
 
 </project>
