@@ -1,0 +1,34 @@
+# Use root/example as user/password credentials
+services:
+
+  mongo:
+    image: mongo:latest
+    container_name: "mongo"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://localhost:27017/clima
+      ME_CONFIG_BASICAUTH: 'false'
+
+  api:
+    build: "./"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - DATABASE_URL=127.0.0.1:27017/clima
+      - DATABASE_USER=root
+      - DATABASE_PWD=example
