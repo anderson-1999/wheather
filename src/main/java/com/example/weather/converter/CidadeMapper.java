@@ -11,8 +11,8 @@ public interface CidadeMapper {
     @Mapping(target = "id", source = "cidade.id")
     @Mapping(target = "nomeCidade", source = "cidade.nomeCidade")
     @Mapping(target = "barrio", source = "cidade.barrio")
-    @Mapping(target = "latitude", source = "cidade.latitude")
-    @Mapping(target = "longitude", source = "cidade.longitude")
+    @Mapping(target = "estado", source = "cidade.estado")
+    @Mapping(target = "cep", source = "cidade.cep")
     CidadeResponseDTO paraCidadeResponseDTO(CidadeEntity cidade);
 
 }

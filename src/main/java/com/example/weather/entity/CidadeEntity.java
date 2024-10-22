@@ -17,8 +17,8 @@ public class CidadeEntity {
     private String id;
     private String nomeCidade;
     private String barrio;
-    private Long latitude;
-    private Long longitude;
+    private String estado;
+    private String cep;
 }
 
 

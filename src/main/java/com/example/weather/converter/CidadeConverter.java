@@ -19,8 +19,8 @@ public class CidadeConverter {
                 .id(UUID.randomUUID().toString())
                 .nomeCidade(cidadeDTO.nomeCidade())
                 .barrio(cidadeDTO.barrio())
-                .latitude(cidadeDTO.latitude())
-                .longitude(cidadeDTO.longitude())
+                .estado(cidadeDTO.estado())
+                .cep(cidadeDTO.cep())
                 .build();
 
     }

@@ -4,7 +4,7 @@ public record CidadeResponseDTO(
         String id,
         String nomeCidade,
         String barrio,
-        Long latitude,
-        Long longitude
+        String estado,
+        String cep
 ) {
 }
