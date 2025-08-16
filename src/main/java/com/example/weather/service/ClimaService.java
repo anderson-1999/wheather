@@ -1,14 +1,14 @@
 package com.example.weather.service;
 
-import com.example.weather.converter.ClimaConverter;
-import com.example.weather.converter.ClimaMapper;
-import com.example.weather.entity.CidadeEntity;
+
 import com.example.weather.entity.ClimaEntity;
 import com.example.weather.reponse.CidadeResponseDTO;
 import com.example.weather.reponse.ClimaResponseDTO;
 import com.example.weather.repository.ClimaRepository;
 import com.example.weather.request.ClimaRequestDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,23 +21,19 @@ import static org.springframework.util.Assert.notNull;
 @RequiredArgsConstructor
 public class ClimaService {
 
-    private final ClimaRepository climaRepository;
-    private final ClimaConverter climaConverter;
-    private final ClimaMapper climaMapper;
-
-
-    public ClimaEntity salvaClima(ClimaEntity climaEntity) {
-        return climaRepository.save(climaEntity);
-    }
+    @Autowired
+    private ClimaRepository climaRepository;
 
     public ClimaResponseDTO gravarClima(ClimaRequestDTO climaRequestDTO) {
         try {
-            notNull(climaRequestDTO, "Os dados do usuário são obrigatórios");
-            ClimaEntity climaEntity = salvaClima(climaConverter.paraClimaEntity(climaRequestDTO));
+            notNull(climaRequestDTO, "Os dados do clima são obrigatórios");
+            ClimaEntity novoClima  = new ClimaEntity();
+            BeanUtils.copyProperties(climaRequestDTO, novoClima);
 
-            return climaMapper.paraClimaResponseDTO(climaEntity);
+            ClimaEntity climaSalvo = climaRepository.save(novoClima);
+            return new ClimaResponseDTO(climaSalvo);
+
         } catch (Exception e) {
-            e.getMessage();
             throw new NullPointerException("Erro ao gravar dados do clima");
         }
     }
@@ -46,19 +42,24 @@ public class ClimaService {
     public ClimaResponseDTO buscaDadosClima(String id) {
         try {
             Optional<ClimaEntity> entity = climaRepository.findById(id);
-            notNull(entity, "clima não encontrado");
 
-            return climaMapper.paraClimaResponseDTO(entity.get());
+            if (entity.isPresent()){
+                return new ClimaResponseDTO(entity.get());
+            } else {
+                throw new RuntimeException("Clima não existe!");
+            }
         } catch (Exception e) {
-            e.getMessage();
             throw new NullPointerException("Erro ao buscar dados do clima");
         }
     }
 
     public List<ClimaResponseDTO> buscarTodosClimas(){
-        List<ClimaEntity> cidades = climaRepository.findAll();
 
-        return cidades.stream().map(climaMapper::paraClimaResponseDTO).toList();
+        return climaRepository
+                .findAll()
+                .stream()
+                .map(ClimaResponseDTO::new)
+                .toList();
 
     }
 
@@ -67,6 +68,24 @@ public class ClimaService {
         Optional<ClimaEntity> entity = climaRepository.findById(id);
         climaRepository.deleteById(id);
 
+        if (entity.isPresent()){
+            climaRepository.delete(entity.get());
+        } else {
+            throw new RuntimeException("Clima não encontrado!");
+        }
+
+    }
+
+    public ClimaResponseDTO atualizar(ClimaEntity climaEntity){
+        Optional<ClimaEntity> entity =
+                climaRepository.findById(climaEntity.getId());
+
+        if (entity.isPresent()){
+            ClimaEntity entitySalvo = climaRepository.save(climaEntity);
+            return new ClimaResponseDTO(entitySalvo);
+        } else {
+            throw new RuntimeException("Usuário não encontrado!");
+        }
     }
 
 

@@ -23,27 +23,27 @@ public class TokenService {
             Algorithm algorithm = Algorithm.HMAC256(secret);
 
             return JWT.create()
-                    .withIssuer("open-api")
-                    .withSubject(usuario.getLogin())
+                    .withIssuer("weather")
+                    .withSubject(usuario.getUsername())
                     .withExpiresAt(genarationExpiretionDate())
                     .sign(algorithm);
         } catch (JWTCreationException e){
-            throw new RuntimeException("error ao gerar token", e);
+            throw new RuntimeException("error ao gerar token");
         }
     }
 
     public String validateToken(String token){
-        try{
+        try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
+
             return JWT.require(algorithm)
+                    .withIssuer("weather")
                     .build()
                     .verify(token)
                     .getSubject();
 
-
-        } catch (JWTVerificationException e){
-            //throw new RuntimeException("Usuario inválid0", e);
-            return "";
+        }catch (JWTVerificationException e){
+            return "error ao verificar token";
         }
     }
 

@@ -3,6 +3,7 @@ package com.example.weather.entity;
 import com.example.weather.utils.UserRole;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +24,7 @@ public class UsuarioEntity implements UserDetails {
     @Id
     private String id;
     private String senha;
+    @Indexed(unique = true)
     private String login;
     private UserRole role;
 
@@ -43,7 +45,7 @@ public class UsuarioEntity implements UserDetails {
 
     @Override
     public String getPassword() {
-        return "";
+        return senha;
     }
 
     @Override

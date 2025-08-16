@@ -5,6 +5,7 @@ import com.example.weather.request.CidadeRequestDTO;
 import com.example.weather.service.CidadeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +34,9 @@ public class CidadeController {
         return ResponseEntity.ok(cidadeService.buscarTodasCidades());
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deletaDadosCidade(@RequestParam ("id") String id) {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> deletaDadosCidade(@PathVariable ("id") String id) {
         cidadeService.deletaDadosCidade(id);
         return ResponseEntity.accepted().build();
     }

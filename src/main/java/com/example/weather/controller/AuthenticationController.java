@@ -2,18 +2,24 @@ package com.example.weather.controller;
 
 import com.example.weather.entity.UsuarioEntity;
 import com.example.weather.reponse.AuthResponseDTO;
-import com.example.weather.repository.UsuarioRepository;
+import com.example.weather.reponse.UsuarioResposeDTO;
 import com.example.weather.request.AuthenticationRequestDTO;
 import com.example.weather.request.RegisterRequestDTO;
+import com.example.weather.service.AuthorizationService;
 import com.example.weather.utils.security.TokenService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/auth", produces = {"application/json"})
@@ -23,17 +29,22 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
     private TokenService tokenService;
+    @Autowired
+    private AuthorizationService authorizationService;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AuthenticationRequestDTO authenticationRequestDTO){
 
-        var usernamePassword = new UsernamePasswordAuthenticationToken(authenticationRequestDTO.login(), authenticationRequestDTO.senha());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        var token = tokenService.generateToken((UsuarioEntity) auth.getPrincipal());
+        UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(
+                authenticationRequestDTO.login(),
+                authenticationRequestDTO.senha()
+        );
+
+        Authentication auth = this.authenticationManager.authenticate(usernamePassword);
+
+        String token = tokenService.generateToken((UsuarioEntity) auth.getPrincipal());
 
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
@@ -41,21 +52,19 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO){
 
-        if (this.usuarioRepository.findByLogin(registerRequestDTO.login()) != null) {
-            return ResponseEntity.badRequest().build();
-        }
+        UsuarioResposeDTO usuarioSalvo = authorizationService.salvarUsuario(registerRequestDTO);
 
-        String encriptedPassword = new BCryptPasswordEncoder().encode(registerRequestDTO.senha());
+        return ResponseEntity.ok(usuarioSalvo);
+    }
 
-        UsuarioEntity newUsuario =
-                new UsuarioEntity(
-                        registerRequestDTO.login(),
-                        encriptedPassword,
-                        registerRequestDTO.role()
-                );
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public Map<String, String> handleIntegrityViolation() {
 
-        this.usuarioRepository.save(newUsuario);
+        Map<String, String> errorMap = new HashMap<>();
 
-        return ResponseEntity.ok().build();
+        errorMap.put("erro", "Usuário já cadastrado!");
+
+        return errorMap;
     }
 }
